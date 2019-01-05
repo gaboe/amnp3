@@ -1,0 +1,9 @@
+source https://api.nuget.org/v3/index.json
+
+nuget FSharp.Core
+nuget FSharp.Data 3.0.0
+nuget MathNet.Numerics 4.7.0
+nuget MathNet.Numerics.FSharp 4.7.0
+nuget Microsoft.NET.Test.Sdk 15.9.0
+nuget MSTest.TestAdapter 1.3.2
+nuget MSTest.TestFramework 1.3.2

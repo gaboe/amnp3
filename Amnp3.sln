@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.168
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{5A404A22-2EC8-4349-A666-BA0A3A8777C1}"
+	ProjectSection(SolutionItems) = preProject
+		paket.dependencies = paket.dependencies
+	EndProjectSection
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Amnp3", "Amnp3\Amnp3.fsproj", "{48D8F623-227E-453C-B29F-1F41EAF57DB4}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Test", "Test\Test.fsproj", "{88C5FAD2-6628-4673-A9E7-84F159C6B674}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{48D8F623-227E-453C-B29F-1F41EAF57DB4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48D8F623-227E-453C-B29F-1F41EAF57DB4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48D8F623-227E-453C-B29F-1F41EAF57DB4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48D8F623-227E-453C-B29F-1F41EAF57DB4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88C5FAD2-6628-4673-A9E7-84F159C6B674}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88C5FAD2-6628-4673-A9E7-84F159C6B674}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88C5FAD2-6628-4673-A9E7-84F159C6B674}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88C5FAD2-6628-4673-A9E7-84F159C6B674}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E512AA5D-A45A-4422-843A-FC6C5E9287EC}
+	EndGlobalSection
+EndGlobal
