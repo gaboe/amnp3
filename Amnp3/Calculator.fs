@@ -2,7 +2,9 @@
 open FSharp.Data
 open MathNet.Numerics.LinearAlgebra
 
-type DataInput = CsvProvider<"./input.csv">
+[<Literal>]
+let inputName = "./input-nezasumeny.csv" 
+type DataInput = CsvProvider<inputName, ";">
 
 type RowList = DataInput.Row list
 
@@ -10,7 +12,15 @@ type CovariantMatrix = Matrix<float>
 
 type Parameters = { y1: decimal; y2: decimal; u1: decimal; u2: decimal}
 
+type State = {index: int; parameters: Parameters; covariantMatrix: CovariantMatrix}
+
 let toMatrix p = matrix [[ float p.y1; float p.y2; float p.u1; float p.u2 ]]
+
+let fromMatrix (m:Matrix<float>) =
+    {y1 = decimal(m.Item(0, 0));
+    y2 = decimal(m.Item(0, 1));
+    u1 = decimal(m.Item(0, 2));
+    u2 = decimal(m.Item(0, 3))}
 
 let negate (n: decimal) = System.Decimal.Negate n
 
@@ -31,14 +41,6 @@ let getPredictionError y fi prevParams =
     let change = ((toMatrix fi)).Multiply((toMatrix prevParams).Transpose()).Determinant()
     let error = (float y) + change;
     error
-
-let initialCovariantMatrix =
-    let milion = float 1_00//0_000
-    let z = float 0
-    matrix [[milion; z; z; z]
-            [z; milion; z; z]
-            [z; z; milion; z]
-            [z; z; z; milion ]]
 
 let activateCovariantMatrix (previousCovMat: CovariantMatrix) fi = 
     let fiMat = toMatrix fi
@@ -62,16 +64,47 @@ let activateParamVectors prevParams (covMat: CovariantMatrix) fi (err: float) =
     let result = (toMatrix prevParams) - right.Transpose()
     result
 
-let inputData = DataInput.Load("./input.csv")
+let iterate (rows: RowList) (state: State) (row: DataInput.Row) =
+    let fi = getFi state.index rows
+    let err = getPredictionError row.Y fi state.parameters 
+    let covariantM = activateCovariantMatrix state.covariantMatrix fi
+    let parameters = activateParamVectors state.parameters covariantM fi err |> fromMatrix
+   
+    parameters,  {state with 
+                        index = state.index + 1;
+                        covariantMatrix = covariantM;
+                        parameters = parameters}
+
+let inputData = DataInput.Load(inputName)
 
 let rows = Seq.toList inputData.Rows
 
+let iterateRow = iterate rows
+
+
 let _zeroFi = getFi 0 rows 
 
-let sucasnaMatica = {y1 = 2M; y2 = 2M; u1 = 2M; u2 = 2M};
-let predchMatica = {y1 = 1M; y2 = 1M; u1 = 1M; u2 = 1M};
-let _error = getPredictionError 2 sucasnaMatica predchMatica
+let sucasnaMatica = {y1 = -0.44M; y2 = -0.0546M; u1 = 0.44M; u2 = 0.0598M};
+let predchMatica = {y1 = -0.44M; y2 = -0.0546M; u1 = 0.44M; u2 = 0.0598M};
+let _error = getPredictionError 1.230033933M sucasnaMatica predchMatica
+
+let initialCovariantMatrix =
+    let milion = float 1_000_000
+    let z = float 0
+    matrix [[milion; z; z; z]
+            [z; milion; z; z]
+            [z; z; milion; z]
+            [z; z; z; milion ]]
 
 let m2 = activateCovariantMatrix initialCovariantMatrix sucasnaMatica
 
 let nextParams = activateParamVectors predchMatica m2 _zeroFi _error
+
+let initialState =
+    { index = 0; 
+    parameters = {y1 = -0.44M; y2 = -0.0546M; u1 = 0.44M; u2 = 0.0598M};
+    covariantMatrix = initialCovariantMatrix}
+
+let (output, state) = rows |> List.mapFold (fun state row -> iterateRow state row) initialState
+
+let p = state.parameters
