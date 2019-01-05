@@ -3,7 +3,7 @@ open FSharp.Data
 open MathNet.Numerics.LinearAlgebra
 
 [<Literal>]
-let inputName = "./input-nezasumeny.csv" 
+let inputName = "./input-zasumeny.csv" 
 type DataInput = CsvProvider<inputName, ";">
 
 type RowList = DataInput.Row list
@@ -35,9 +35,6 @@ let getFi index (rows: DataInput.Row list)  =
     { y1 = negate _1.Y; y2 = negate _2.Y; u1 = _1.U; u2 = _2.U }
 
 let getPredictionError y fi prevParams = 
-    //let change = negate(prevParams.y1 * fi.y1) + negate(prevParams.y2 * fi.y2) 
-    //                + (prevParams.u1 * fi.u1) + (prevParams.u2 + fi.u2) |> float
-
     let change = ((toMatrix fi)).Multiply((toMatrix prevParams).Transpose()).Determinant()
     let error = (float y) + change;
     error
@@ -70,10 +67,10 @@ let iterate (rows: RowList) (state: State) (row: DataInput.Row) =
     let covariantM = activateCovariantMatrix state.covariantMatrix fi
     let parameters = activateParamVectors state.parameters covariantM fi err |> fromMatrix
    
-    parameters,  {state with 
-                        index = state.index + 1;
-                        covariantMatrix = covariantM;
-                        parameters = parameters}
+    (parameters, err),  {state with 
+                            index = state.index + 1;
+                            covariantMatrix = covariantM;
+                            parameters = parameters}
 
 let inputData = DataInput.Load(inputName)
 
@@ -102,9 +99,17 @@ let nextParams = activateParamVectors predchMatica m2 _zeroFi _error
 
 let initialState =
     { index = 0; 
-    parameters = {y1 = -0.44M; y2 = -0.0546M; u1 = 0.44M; u2 = 0.0598M};
+    parameters = {y1 = 10M; y2 = 10M; u1 = 10M; u2 = 10M};
     covariantMatrix = initialCovariantMatrix}
 
 let (output, state) = rows |> List.mapFold (fun state row -> iterateRow state row) initialState
 
 let p = state.parameters
+
+type OutputType = CsvProvider<Schema = "U1 (decimal), U2 (decimal), Y1 (decimal), Y2 (decimal), Error (float)", HasHeaders=false>
+
+let o = output |> List.map(fun (e, err) -> OutputType.Row(e.u1, e.u2, e.y1, e.y2, err))
+
+let myCsv = new OutputType(o)
+
+myCsv.Save(__SOURCE_DIRECTORY__ + "/output-zasumeny.csv", ';')
