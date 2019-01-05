@@ -6,9 +6,9 @@ type DataInput = CsvProvider<"./input.csv">
 
 type Parameters = { y1: decimal; y2: decimal; u1: decimal; u2: decimal}
 
-let toMatrix p =
-    let m = matrix [[ float p.y1; float p.y2; float p.u1; float p.u2 ]]
-    m
+let toMatrix p = matrix [[ float p.y1; float p.y2; float p.u1; float p.u2 ]]
+
+let multiply (l:Matrix<'t>) (r:Matrix<'t>) = l.Multiply(r)
 
 type RowList = DataInput.Row list
 
@@ -32,6 +32,31 @@ let getPredictionError y fi prevParams =
     let error = (float y) + change;
     error
 
+let initialCovariantMatrix =
+    let milion = float 1_00//0_000
+    let z = float 0
+    matrix [[milion; z; z; z]
+            [z; milion; z; z]
+            [z; z; milion; z]
+            [z; z; z; milion ]]
+
+let activateCovariantMatrix (previousCovMat: Matrix<float>) fi = 
+    let fiMat = toMatrix fi
+    let fiTranMat = fiMat.Transpose()
+
+    let nominator = previousCovMat.Multiply(fiTranMat.Multiply(fiMat.Multiply(previousCovMat)))
+    printfn "nominator %s" (nominator.ToString())
+    
+    let denominator = float 1 + fiMat.Multiply(previousCovMat.Multiply(fiTranMat))
+    printfn "denominator %s" (denominator.ToString())
+
+    let fraction = nominator.Divide(denominator.Determinant())
+
+    let result = previousCovMat - fraction
+
+    result
+
+
 let inputData = DataInput.Load("./input.csv")
 
 let rows = Seq.toList inputData.Rows
@@ -41,3 +66,5 @@ let _zeroFi = getFi 0 rows
 let sucasnaMatica = {y1 = 2M; y2 = 2M; u1 = 2M; u2 = 2M};
 let predchMatica = {y1 = 1M; y2 = 1M; u1 = 1M; u2 = 1M};
 let _error = getPredictionError 2 sucasnaMatica predchMatica
+
+let m2 = activateCovariantMatrix initialCovariantMatrix sucasnaMatica
