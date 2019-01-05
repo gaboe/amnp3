@@ -4,13 +4,13 @@ open MathNet.Numerics.LinearAlgebra
 
 type DataInput = CsvProvider<"./input.csv">
 
+type RowList = DataInput.Row list
+
+type CovariantMatrix = Matrix<float>
+
 type Parameters = { y1: decimal; y2: decimal; u1: decimal; u2: decimal}
 
 let toMatrix p = matrix [[ float p.y1; float p.y2; float p.u1; float p.u2 ]]
-
-let multiply (l:Matrix<'t>) (r:Matrix<'t>) = l.Multiply(r)
-
-type RowList = DataInput.Row list
 
 let negate (n: decimal) = System.Decimal.Negate n
 
@@ -40,7 +40,7 @@ let initialCovariantMatrix =
             [z; z; milion; z]
             [z; z; z; milion ]]
 
-let activateCovariantMatrix (previousCovMat: Matrix<float>) fi = 
+let activateCovariantMatrix (previousCovMat: CovariantMatrix) fi = 
     let fiMat = toMatrix fi
     let fiTranMat = fiMat.Transpose()
 
@@ -56,6 +56,11 @@ let activateCovariantMatrix (previousCovMat: Matrix<float>) fi =
 
     result
 
+let activateParamVectors prevParams (covMat: CovariantMatrix) fi (err: float) =
+    let right = covMat.Multiply((toMatrix fi).Transpose()).Multiply(err)
+    printfn "right %s" (right.ToString())
+    let result = (toMatrix prevParams) - right.Transpose()
+    result
 
 let inputData = DataInput.Load("./input.csv")
 
@@ -68,3 +73,5 @@ let predchMatica = {y1 = 1M; y2 = 1M; u1 = 1M; u2 = 1M};
 let _error = getPredictionError 2 sucasnaMatica predchMatica
 
 let m2 = activateCovariantMatrix initialCovariantMatrix sucasnaMatica
+
+let nextParams = activateParamVectors predchMatica m2 _zeroFi _error
