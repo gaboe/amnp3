@@ -24,14 +24,14 @@ let fromMatrix (m:Matrix<float>) =
 
 let negate (n: decimal) = System.Decimal.Negate n
 
-let rowOnIdexOrDefault i rows = 
+let rowOnIndexOrDefault i rows = 
     match List.tryItem i rows with
         | Some x -> x 
         | None -> DataInput.Row(0M, 0M)
 
 let getFi index (rows: DataInput.Row list)  = 
-    let _1 = rowOnIdexOrDefault (index - 1) rows
-    let _2 = rowOnIdexOrDefault (index - 2) rows
+    let _1 = rowOnIndexOrDefault (index - 1) rows
+    let _2 = rowOnIndexOrDefault (index - 2) rows
     { y1 = negate _1.Y; y2 = negate _2.Y; u1 = _1.U; u2 = _2.U }
 
 let getPredictionError y fi prevParams = 
@@ -52,7 +52,6 @@ let activateCovariantMatrix (previousCovMat: CovariantMatrix) fi =
     let fraction = nominator.Divide(denominator.Determinant())
 
     let result = previousCovMat - fraction
-
     result
 
 let activateParamVectors prevParams (covMat: CovariantMatrix) fi (err: float) =
@@ -67,7 +66,7 @@ let iterate (rows: RowList) (state: State) (row: DataInput.Row) =
     let covariantM = activateCovariantMatrix state.covariantMatrix fi
     let parameters = activateParamVectors state.parameters covariantM fi err |> fromMatrix
    
-    (parameters, err),  {state with 
+    (parameters, err), {state with 
                             index = state.index + 1;
                             covariantMatrix = covariantM;
                             parameters = parameters}
@@ -99,7 +98,7 @@ let nextParams = activateParamVectors predchMatica m2 _zeroFi _error
 
 let initialState =
     { index = 0; 
-    parameters = {y1 = 10M; y2 = 10M; u1 = 10M; u2 = 10M};
+    parameters = {y1 = 100M; y2 = 100M; u1 = 100M; u2 = 100M};
     covariantMatrix = initialCovariantMatrix}
 
 let (output, state) = rows |> List.mapFold (fun state row -> iterateRow state row) initialState
